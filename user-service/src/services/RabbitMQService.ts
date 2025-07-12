@@ -1,4 +1,4 @@
-import amqp from "amqplib";
+import amqp from "amqplib";    /**** https://www.cloudamqp.com **/
 import config from "../config/config";
 import { User } from "../database";
 import { ApiError } from "../utils";
