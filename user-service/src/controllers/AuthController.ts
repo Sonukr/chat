@@ -87,7 +87,59 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
+
+const me = async (req: Request, res: Response) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                status: 401,
+                message: "Unauthorized",
+            });
+        }
+
+        const { _id, name, email } = req.user;
+
+        return res.json({
+            status: 200,
+            message: "User fetched successfully!",
+            user: {
+                id: _id,
+                name,
+                email,
+            },
+        });
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 500,
+            message: error.message,
+        });
+    }
+};
+
+
+const logout = async (req: Request, res: Response) => {};
+
+const getAllUsers = async (req: Request, res: Response) => {
+    try {
+      const users = await User.find().select("-password");
+      return res.json({
+        status: 200,
+        message: "Users fetched successfully",
+        users,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  };
+  
+
+
 export default {
     register,
     login,
+    me,
+    getAllUsers
 };
