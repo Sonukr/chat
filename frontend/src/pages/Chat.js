@@ -43,7 +43,7 @@ function Chat() {
 
   const fetchMessages = async () => {
     try {
-      const res = await api.get(`/chat/get/${receiverId}`);
+      const res = await api.get(`/messages/get/${receiverId}`);
       setMessages(res.data.messages || []);
     } catch (err) {
       setError('Failed to fetch messages');
@@ -54,9 +54,9 @@ function Chat() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/chat/send', {
+      await api.post('/messages/send', {
         receiverId,
-        content: message,
+        message: message,
       });
       setMessage('');
       fetchMessages();

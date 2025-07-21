@@ -17,5 +17,9 @@ messageRoutes.get("/", (req: Request, res: Response) => {
     res.send("Chat Service is running");
 });
 
+messageRoutes.get("/health", (req: Request, res: Response) => {
+    res.status(200).send("OK");
+});
+
 
 export default messageRoutes;

@@ -1,6 +1,7 @@
 import express from "express";
 import proxy from "express-http-proxy";
 import cors from "cors";
+import axios from "axios";
 
 const app = express();
 app.use(cors());
@@ -17,13 +18,36 @@ const auth = proxy("http://user:8081");
 const messages = proxy("http://chat:8082");
 const notifications = proxy("http://notification:8083");
 
+const SERVICES = {
+    auth: "http://user:8081",
+    messages: "http://chat:8082",
+    notifications: "http://notification:8083",
+};
+
 app.use("/api/auth", auth);
 app.use("/api/messages", messages);
 app.use("/api/notifications", notifications);
-app.use("/", (req, res) => {
-    res.send("Gateway is running");
-});
+app.get("/", async (req, res) => {
+    const results: Record<string, "up" | "down"> = {};
 
+    await Promise.all(
+        Object.entries(SERVICES).map(async ([key, baseUrl]) => {
+            try {
+                const response = await axios.get(`${baseUrl}/health`, {
+                    timeout: 2000,
+                });
+                results[key] = response.status === 200 ? "up" : "down";
+            } catch (err) {
+                results[key] = "down";
+            }
+        })
+    );
+
+    res.json({
+        gateway: "up",
+        services: results,
+    });
+});
 const server = app.listen(8080, () => {
     console.log("Gateway is Listening to Port 8080");
 });
