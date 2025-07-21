@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import UserSelect from './userSelect';
+
 
 function Chat() {
   const { user, logout } = useAuth();
@@ -8,6 +10,12 @@ function Chat() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchMe();
+  }, [])
 
   useEffect(() => {
     if (receiverId) {
@@ -17,6 +25,21 @@ function Chat() {
     }
     // eslint-disable-next-line
   }, [receiverId]);
+
+  const fetchMe = async () => {
+    api.get('/auth/me').then((res) => {
+      console.log(res.data);
+    }).catch((err) => {
+      console.log(err);
+    })
+
+  }
+
+  const fetchUsers = async () => {
+    const res = await api.get('/auth/all');
+    console.log(res.data);
+    setUsers(res.data.users);
+  }
 
   const fetchMessages = async () => {
     try {
@@ -49,12 +72,10 @@ function Chat() {
         <button onClick={logout}>Logout</button>
       </div>
       <div style={{ marginBottom: 16 }}>
-        <input
-          type="text"
-          placeholder="Receiver ID"
-          value={receiverId}
-          onChange={e => setReceiverId(e.target.value)}
-          style={{ width: '100%', marginBottom: 8 }}
+        <UserSelect
+          users={users}
+          currentUser={user}
+          setReceiverId={setReceiverId}
         />
       </div>
       <div style={{ border: '1px solid #ccc', minHeight: 200, padding: 8, marginBottom: 8 }}>
