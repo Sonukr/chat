@@ -81,7 +81,7 @@ function Chat() {
       <div style={{ border: '1px solid #ccc', minHeight: 200, padding: 8, marginBottom: 8 }}>
         {messages.length === 0 && <div>No messages</div>}
         {messages.map((msg, idx) => (
-          <div key={idx} style={{ textAlign: msg.senderId === user._id ? 'right' : 'left' }}>
+          <div key={idx} style={{ textAlign: msg.senderId === user.id ? 'right' : 'left' }}>
             <b>{msg.senderId === user.id ? 'You' : 'Them'}:</b> {msg.message}
           </div>
         ))}
