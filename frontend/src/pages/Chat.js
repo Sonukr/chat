@@ -44,7 +44,7 @@ function Chat() {
   const fetchMessages = async () => {
     try {
       const res = await api.get(`/messages/get/${receiverId}`);
-      setMessages(res.data.messages || []);
+      setMessages(res.data.data || []);
     } catch (err) {
       setError('Failed to fetch messages');
     }
@@ -82,7 +82,7 @@ function Chat() {
         {messages.length === 0 && <div>No messages</div>}
         {messages.map((msg, idx) => (
           <div key={idx} style={{ textAlign: msg.senderId === user._id ? 'right' : 'left' }}>
-            <b>{msg.senderId === user._id ? 'You' : 'Them'}:</b> {msg.content}
+            <b>{msg.senderId === user.id ? 'You' : 'Them'}:</b> {msg.message}
           </div>
         ))}
       </div>
