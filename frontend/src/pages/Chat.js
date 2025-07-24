@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import UserSelect from './userSelect';
+import { useNavigate } from 'react-router-dom';
 
 
 function Chat() {
@@ -11,6 +12,7 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -27,18 +29,38 @@ function Chat() {
   }, [receiverId]);
 
   const fetchMe = async () => {
-    api.get('/auth/me').then((res) => {
-      console.log(res.data);
-    }).catch((err) => {
-      console.log(err);
-    })
-
+    try {
+      const res = await api.get('/auth/me');
+      if(res.status > 400){
+        navigate('/login');
+      }else{
+        console.log(res.data);
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        navigate('/login');
+      } else {
+        console.log(err);
+      }
+    }
   }
 
   const fetchUsers = async () => {
-    const res = await api.get('/auth/all');
-    console.log(res.data);
-    setUsers(res.data.users);
+    try {
+      const res = await api.get('/auth/all');
+      console.log(res.data);
+      if(res.status > 400){
+        navigate('/login');
+      }else{
+        setUsers(res.data.users);
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        navigate('/login');
+      } else {
+        console.log(err);
+      }
+    }
   }
 
   const fetchMessages = async () => {
