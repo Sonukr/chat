@@ -1,7 +1,8 @@
 import { ErrorRequestHandler } from "express";
 import { ApiError } from "../utils";
+import { requestLogger } from "./requestLogger";
 
-export const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
+const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
     let error = err;
     if (!(error instanceof ApiError)) {
         const statusCode =
@@ -17,7 +18,7 @@ export const errorConverter: ErrorRequestHandler = (err, req, res, next) => {
     next(error);
 };
 
-export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     let { statusCode, message } = err;
     if (process.env.NODE_ENV === "production" && !err.isOperational) {
         statusCode = 500; // Internal Server Error
@@ -39,3 +40,6 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     res.status(statusCode).json(response);
     next();
 };
+
+
+export { errorConverter, errorHandler, requestLogger };

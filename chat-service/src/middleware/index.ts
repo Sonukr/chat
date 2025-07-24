@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils";
 import config from "../config/config";
+import { requestLogger } from "./requestLogger";
 
 interface TokenPayload {
     id: string;
@@ -94,4 +95,4 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     next();
 };
 
-export { authMiddleware, errorConverter, errorHandler };
+export { authMiddleware, errorConverter, errorHandler, requestLogger };

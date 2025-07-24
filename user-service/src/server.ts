@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import { Server } from "http";
 import userRouter from "./routes/authRoutes";
-import { errorConverter, errorHandler } from "./middleware";
+import { errorConverter, errorHandler, requestLogger } from "./middleware";
 import { connectDB } from "./database";
 import config from "./config/config";
 import { rabbitMQService } from "./services/RabbitMQService";
@@ -9,6 +9,7 @@ import { rabbitMQService } from "./services/RabbitMQService";
 const app: Express = express();
 let server: Server;
 app.use(express.json());
+app.use(requestLogger);
 app.use(express.urlencoded({ extended: true }));
 app.use(userRouter);
 app.use(errorConverter);
