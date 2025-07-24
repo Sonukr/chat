@@ -10,8 +10,18 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve the build with nginx
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Stage 2: Serve the build using a simple static server
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install a lightweight static server like serve
+RUN npm install -g serve
+
+# Copy the build folder from previous stage
+COPY --from=build /app/build ./build
+
+EXPOSE 3000
+
+# Serve the React build on port 3000
+CMD ["serve", "-s", "build", "-l", "3000"]
