@@ -1,7 +1,6 @@
 import Stripe from 'stripe';
 import config from '../config/config';
 import StripePayment, { IStripePayment } from '../database/models/StripeModel';
-import { res } from '../../../chat-service/node_modules/pino-http/node_modules/pino-std-serializers/index.d';
 import { ApiError } from '../utils';
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY || "");
