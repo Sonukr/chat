@@ -44,6 +44,18 @@ services:
     environment:
       - NODE_ENV=production
 
+  stripe:
+    build:
+      context: ./stripe-service
+      dockerfile: Dockerfile
+    ports:
+      - "4242:4242"
+    depends_on:
+      - "mongodb"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/stripe-db
+
   nginx:
     build:
       context: ./nginx
@@ -54,6 +66,7 @@ services:
       - user
       - chat
       - notification
+      - stripe
   
   gateway:
     build:

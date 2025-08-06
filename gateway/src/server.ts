@@ -12,21 +12,27 @@ app.use(express.urlencoded({ extended: true }));
 // const auth = proxy("http://localhost:8081");
 // const messages = proxy("http://localhost:8082");
 // const notifications = proxy("http://localhost:8083");
+// const stripe =  proxy("http://localhost:8084");
 
 // For Docker
 const auth = proxy("http://user:8081");
 const messages = proxy("http://chat:8082");
 const notifications = proxy("http://notification:8083");
+const stripe = proxy("http://stripe:8084");
+
 
 const SERVICES = {
     auth: "http://user:8081",
     messages: "http://chat:8082",
     notifications: "http://notification:8083",
+    stripe: "http://stripe:8084",
 };
 
 app.use("/api/auth", auth);
 app.use("/api/messages", messages);
 app.use("/api/notifications", notifications);
+app.use("/api/stripe", stripe);
+
 app.get("/", async (req, res) => {
     const results: Record<string, "up" | "down"> = {};
 
