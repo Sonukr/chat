@@ -49,7 +49,7 @@ services:
       context: ./stripe-service
       dockerfile: Dockerfile
     ports:
-      - "4242:4242"
+      - "8084:8084"
     depends_on:
       - "mongodb"
     environment:
