@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import UserSelect from './userSelect';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 function Chat() {
@@ -12,11 +12,13 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
   const [users, setUsers] = useState([]);
+  const [subscription, setSubscription] = useState({})
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
     fetchMe();
+    fetchSubscription();
   }, [])
 
   useEffect(() => {
@@ -72,6 +74,21 @@ function Chat() {
     }
   };
 
+  const fetchSubscription = async() => {
+    try {
+      const res = await api.get('/stripe/subscription-by-email');
+      console.log(res.data);
+      if(res.status > 400){
+        navigate('/subscription');
+      }else{
+        console.log(res.data);
+        setSubscription(res.data.data)
+      }
+    } catch (err) { 
+      setError('Failed to fetch subscription');
+    }
+  }
+
   const handleSend = async (e) => {
     e.preventDefault();
     setError('');
@@ -91,7 +108,12 @@ function Chat() {
     <div style={{ maxWidth: 600, margin: '40px auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>Chat</h2>
-        <button onClick={logout}>Logout</button>
+        <div>
+          <Link to="/subscription" style={{ marginRight: 8 }}>
+          {subscription?.price?.product?.description || "Subscription"} 
+          </Link>
+          <button onClick={logout}>Logout</button>
+        </div>
       </div>
       <div style={{ marginBottom: 16 }}>
         <UserSelect
