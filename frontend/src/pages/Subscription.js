@@ -5,6 +5,8 @@ export default function Subscription() {
   const [products, setProducts] = useState([]);
   const [billingInterval, setBillingInterval] = useState('month');
   const [subscription, setSubscription] = useState({});
+  const [groupPurchase, setGroupPurchase] = useState(false);
+  const [quantity, setQuantity] = useState(2);
 
   useEffect(() => {
     loadProducts();
@@ -88,7 +90,7 @@ export default function Subscription() {
   }
 
   const filteredProducts = products.filter(
-    (product) => product.price && product.price.recurring.interval === billingInterval
+    (product) => product.prices && product.prices.some(price => price.recurring.interval === billingInterval)
   ).reverse();
 
   const toggleButtonStyle = (isActive) => ({
@@ -102,6 +104,83 @@ export default function Subscription() {
     transition: 'background-color 0.2s, color 0.2s',
   });
 
+
+  const getPrice = (product) => {
+    let price = "";
+    const hasTiers = product.prices.some(price => price.billing_scheme==="tiered");
+    if(groupPurchase && hasTiers){
+      price = product.prices.find(price => price.billing_scheme==="tiered");
+    }else{
+      price = product.prices.find(price => price.billing_scheme==="per_unit");
+    }
+    return price;
+  }
+
+  const getCheckoutDetails = (product) => {
+    const price = getPrice(product);
+    let amount = 0;
+    if(groupPurchase){
+      if(price?.tiers?.length > 0){
+        const nearestTier = price?.tiers?.find(tier => tier.up_to >= quantity) || price?.tiers[price?.tiers?.length - 1];
+        if(nearestTier){
+          amount = nearestTier.unit_amount * quantity;
+        }else{
+          amount = price?.unit_amount * quantity;
+        }
+      }else{
+        amount = price?.unit_amount * quantity;
+      }
+    }else{
+      amount = price?.unit_amount;
+    }
+    debugger;
+    return(
+      <div>
+      <div style={{ fontSize: '2em', fontWeight: 'bold', margin: '20px 0' }}>
+        ${(amount / 100).toFixed(2)}
+        <span style={{ fontSize: '0.5em', color: '#777' }}> / {price?.recurring?.interval}</span>
+      </div>
+      {subscription?.price?.id === price.id &&
+        <p>Subscribed on
+          {new Date(subscription.current_period_start * 1000)
+            .toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+        </p>
+      }
+      <button
+        onClick={() => handleSubscribe(price.id, groupPurchase ? quantity : 1)}
+        style={{
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '1em',
+          width: '100%'
+        }}
+      >
+        {subscription?.price?.id === price.id ? 'Subscribed' : 'Subscribe'}
+      </button>
+      {subscription?.price?.id ===price.id && 
+        <p style={{color: 'red', cursor: 'pointer', marginTop: "10px"}}
+        onClick={() => cancelSubscription(subscription.subscription)}>
+          Cancel Subscription
+        </p>
+      }
+      {subscription?.price?.id !== price.id && 
+        <p style={{color: 'green', cursor: 'pointer', marginTop: "10px"}}
+        onClick={() => updateSubscription(subscription.subscription, price.id)}>
+          Update Subscription
+        </p>
+      }
+    </div>
+    )
+
+  }
   return (
     <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Choose Your Plan</h1>
@@ -123,9 +202,33 @@ export default function Subscription() {
         </div>
       </div>
 
-      <div>
-        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={groupPurchase}
+            onChange={() => {
+              setGroupPurchase(!groupPurchase);
+              setQuantity(2);
+            }}
+          />
+          Group Purchase
+        </label>
       </div>
+
+      {groupPurchase && (
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <input
+            type="range"
+            min="2"
+            max="10"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+          <span>{quantity}</span>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', flexWrap: 'wrap' }}>
         {products.length > 0 ? (
           filteredProducts.length > 0 ? (
@@ -146,50 +249,8 @@ export default function Subscription() {
                   <p style={{ color: '#666', minHeight: '40px' }}>{product.description}</p>
                   
                 </div>
-                {product.price && (
-                  <div>
-                    <div style={{ fontSize: '2em', fontWeight: 'bold', margin: '20px 0' }}>
-                      ${(product.price.unit_amount / 100).toFixed(2)}
-                      <span style={{ fontSize: '0.5em', color: '#777' }}> / {product.price.recurring.interval}</span>
-                    </div>
-                    {subscription?.price?.id === product.price.id &&
-                      <p>Subscribed on
-                        {new Date(subscription.current_period_end * 1000)
-                          .toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                      </p>
-                    }
-                    <button
-                      onClick={() => handleSubscribe(product.price.id)}
-                      style={{
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '1em',
-                        width: '100%'
-                      }}
-                    >
-                      {subscription?.price?.id === product.price.id ? 'Subscribed' : 'Subscribe'}
-                    </button>
-                    {subscription?.price?.id === product.price.id && 
-                      <p style={{color: 'red', cursor: 'pointer', marginTop: "10px"}}
-                      onClick={() => cancelSubscription(subscription.subscription)}>
-                        Cancel Subscription
-                      </p>
-                    }
-                    {subscription?.price?.id !== product.price.id && 
-                      <p style={{color: 'green', cursor: 'pointer', marginTop: "10px"}}
-                      onClick={() => updateSubscription(subscription.subscription, product.price.id)}>
-                        Update Subscription
-                      </p>
-                    }
-                  </div>
+                {product.prices && (
+                  getCheckoutDetails(product)
                 )}
                 {product.marketing_features && product.marketing_features.length > 0 && (
                   <ul style={{

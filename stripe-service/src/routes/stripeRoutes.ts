@@ -12,19 +12,16 @@ stripeRoutes.get("/health", (req: Request, res: Response) => {
 });
 
 // @ts-ignore
-stripeRoutes.get("/products", 
-  // authMiddleware
-  StripeController.getAllProducts
-);
-
-stripeRoutes.get("/checkout-url", 
-  // authMiddleware
-  StripeController.getCheckoutUrl
-)
-
-stripeRoutes.get("/subscription", 
-  // authMiddleware
-  StripeController.getSubscriptionByUserEmail
-)
+stripeRoutes.get("/products",  authMiddleware, StripeController.getAllProducts);
+// @ts-ignore
+stripeRoutes.get("/checkout-url",  authMiddleware, StripeController.getCheckoutUrl)
+// @ts-ignore
+stripeRoutes.get("/subscription-by-email",  authMiddleware, StripeController.getSubscriptionByUserEmail)
+// @ts-ignore
+stripeRoutes.get("/verify-session",  authMiddleware, StripeController.verifySession)
+// @ts-ignore
+stripeRoutes.post("/cancel-subscription", authMiddleware, StripeController.cancelSubscription)
+// @ts-ignore
+stripeRoutes.post("/update-subscription", authMiddleware, StripeController.updateSubscription)
 
 export default stripeRoutes;
